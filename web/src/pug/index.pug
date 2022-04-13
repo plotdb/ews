@@ -1,0 +1,36 @@
+doctype html
+html
+  include @/@loadingio/bootstrap.ext/index.pug
+  include @/ldview/index.pug
+  head
+    +css([
+      {name: "bootstrap", path: "dist/css/bootstrap.min.css"},
+      {name: "@loadingio/bootstrap.ext"}
+    ])
+  body
+    .w-1024.rwd.mx-auto.my-4
+      h1.d-flex.align-items-center.g-2
+        span hello
+        .flex-grow-1
+        .btn.btn-outline-secondary(ld="reconnect") Reconnect
+        .btn.btn-outline-secondary(ld="disconnect") Disconnect
+      .row
+        .col-sm(ld-each="channel")
+          label(ld="name")
+          .input-group
+            input.form-control(ld="message")
+            .input-group-append
+              .btn.btn-outline-secondary(ld="send") Send
+          hr
+          div(ld-each="message")
+      textarea.form-control(ld="textarea")
+    +script([
+      {name: "@plotdb/json0", path: "json0.min.js"},
+      {name: "@plotdb/ews", version: "dev", path: "sharedb.min.js"},
+      {name: "@loadingio/ldquery"},
+      {name: "@loadingio/debounce.js"},
+      {name: "ldview"},
+      {name: "@plotdb/ews", version: "dev"},
+      {name: "@plotdb/ews", version: "dev", path: "sdb-client.min.js"}
+    ])
+    script(type="module"): include:lsc index.ls

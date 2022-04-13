@@ -1,12 +1,38 @@
 #!/usr/bin/env bash
 
-rm -rf dist
+#rm -rf dist
 mkdir -p dist
 
 echo "build src/index.ls -> dist/index.js ..."
 ./node_modules/.bin/lsc -cp --no-header src/index.ls > dist/index.js
 echo "minifying index.js ..."
 ./node_modules/.bin/uglifyjs dist/index.js -m -c > dist/index.min.js
+
+
+echo "build src/sdb-client.ls -> dist/sdb-client.js ..."
+./node_modules/.bin/lsc -cp --no-header src/sdb-client.ls > dist/sdb-client.js
+echo "minifying sdb-client.js ..."
+./node_modules/.bin/uglifyjs dist/sdb-client.js -m -c > dist/sdb-client.min.js
+
+echo "build src/sdb-server.ls -> dist/sdb-server.js ..."
+./node_modules/.bin/lsc -cp --no-header src/sdb-server.ls > dist/sdb-server.js
+echo "minifying sdb-server.js ..."
+./node_modules/.bin/uglifyjs dist/sdb-server.js -m -c > dist/sdb-server.min.js
+
+#echo "bundle sharedb for testing ..."
+#./node_modules/.bin/lsc -cp --no-header src/sharedb.ls > dist/_sharedb.js
+#./node_modules/.bin/browserify \
+#  dist/_sharedb.js \
+#  -x ot-json0 \
+#  -g unassertify \
+#  -g envify \
+#  -g uglifyify \
+#  -t aliasify --global-transform aliasify \
+#  -s sharedb \
+#  -p browser-pack-flat/plugin \
+#  > dist/sharedb.js
+#./node_modules/.bin/uglifyjs dist/sharedb.js -m -c > dist/sharedb.min.js
+#rm dist/_sharedb.js
 
 echo "Copy dist/ to web/ ..."
 rm -rf web/static/assets/lib/@plotdb/ews/dev/

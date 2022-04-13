@@ -1,32 +1,38 @@
 t1 = Date.now!
-require! <[fs path yargs http ws @plotdb/srcbuild @plotdb/srcbuild/dist/view/pug sharedb-wrapper express hydrated-ws]>
+require! <[fs path yargs http ws @plotdb/srcbuild @plotdb/srcbuild/dist/view/pug express]>
+ews = require '../dist/index.js'
+sharedb-wrapper = require '../dist/sdb-server.js'
 
 root = path.join(path.dirname(fs.realpathSync __filename.replace(/\(js\)$/,'')), '..')
 
 config = do
   pg: do
-    uri: "postgres://pg:pg@#{process.env.DB_HOST or \localhost}/pg"
-    database: "pg"
-    user: "pg"
-    password: "pg"
+    uri: "postgres://grantdash:pg@#{process.env.DB_HOST or \localhost}/pg"
+    database: "xinmeti"
+    user: "xinmeti"
+    password: "itemnix"
     host: "#{process.env.DB_HOST or \localhost}"
-    port: "#{process.env.DB_PORT or 15432}"
+    port: "#{process.env.DB_PORT or 5432}"
 
 server = do
   init: ->
     @app = app = express!
     cwd = process.cwd!
 
-    {server,sdb,connect,wss} = sharedb-wrapper {app, io: config.pg}
     server = http.create-server app
-    wss = new ws.Server do
-      server: server
+    wss = new ws.Server { server: server }
+    {sdb,connect} = sharedb-wrapper {app, io: config.pg, wss}
 
     wss.on \connection, (ws, req) ->
-      channel-a = new hydrated-ws.Pipe ws, \A
-      channel-b = new hydrated-ws.Pipe ws, \B
-      channel-a.addEventListener \message, (evt) -> console.log "A:", evt.data
-      channel-b.addEventListener \message, (evt) -> console.log "B:", evt.data
+      myws = new ews {ws}
+      channel-a = myws.pipe \A
+      channel-b = myws.pipe \B
+      channel-a.addEventListener \message, (evt) ->
+        console.log "receive message from A:", evt.data
+        channel-b.send "from A: #{evt.data}"
+      channel-b.addEventListener \message, (evt) ->
+        console.log "receive message from B:", evt.data
+        channel-a.send "from B: #{evt.data}"
       ws.on \close, ->
 
     app.engine 'pug', pug({
