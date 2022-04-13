@@ -3,12 +3,17 @@
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
+  "browser": "dist/index.min.js",
+  "main": "dist/index.min.js",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
     "start": "./node_modules/.bin/lsc web/server.ls"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["websocket"],
+  "author": "zbryikt",
+  "license": "MIT",
   "devDependencies": {
     "@loadingio/bootstrap.ext": "^0.0.6",
     "@loadingio/debounce.js": "^1.0.1",
