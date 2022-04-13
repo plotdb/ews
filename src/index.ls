@@ -10,8 +10,11 @@ ews = (o = {}) ->
       @ <<< {_scheme: r.0, _domain: r.1, _path: r.2}
 
   @_scheme = if @_scheme => @_scheme
-  else if (window? and window.location.protocol) == \http: => \ws
+  else if (window? and window.location.protocol) => window.location.protocol.replace(':', '')
   else \wss
+  if @_scheme.startsWith \https => @_scheme = \wss
+  else if @_scheme.startsWith \http => @_scheme = \ws
+
   @_domain = @_domain or if window? => window.location.host else null
   @_path = if !@_path => \/ else if @_path[0] != \/ => "/#{@_path}" else @_path
 
@@ -111,10 +114,9 @@ ews.prototype <<<
     if @_ws => return rej(err 1011)
     if !@_url => return rej(err 1026)
     @_ws = new WebSocket @_url
-    @_installEventListeners!
 
     @_ws.addEventListener \close, ~>
-      @ <<< socket: null
+      @_ws = null
       # Promise is resolved if ever connected so we don't reject.
       # Besides, `close` is fired only if ever connected.
       # if not yet connected, we are still connecting so we shouldn't fire close event.
@@ -124,12 +126,15 @@ ews.prototype <<<
       # otherwise, it's a normal close event. we reset status and fire close event.
       @_status 0
       #@fire \close
-      @_ws = null
       if @_ctrl.disconnector => @_ctrl.disconnector.res!
     @_ws.addEventListener \open, ~>
       if !@_ctrl.canceller => return res!
       @_ctrl.canceller.res!
       return rej(err 0)
+
+    # must put after above listeners,
+    # otherwise user listener cant get correct status information
+    @_installEventListeners!
 
   connect: (opt = {}) ->
     cc = @_ctrl

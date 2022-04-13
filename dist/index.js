@@ -21,7 +21,12 @@
     }
     this._scheme = this._scheme
       ? this._scheme
-      : ((typeof window != 'undefined' && window !== null) && window.location.protocol) === 'http:' ? 'ws' : 'wss';
+      : (typeof window != 'undefined' && window !== null) && window.location.protocol ? window.location.protocol.replace(':', '') : 'wss';
+    if (this._scheme.startsWith('https')) {
+      this._scheme = 'wss';
+    } else if (this._scheme.startsWith('http')) {
+      this._scheme = 'ws';
+    }
     this._domain = this._domain || (typeof window != 'undefined' && window !== null ? window.location.host : null);
     this._path = !this._path
       ? '/'
@@ -244,25 +249,24 @@
         return rej(err(1026));
       }
       this$._ws = new WebSocket(this$._url);
-      this$._installEventListeners();
       this$._ws.addEventListener('close', function(){
-        this$.socket = null;
+        this$._ws = null;
         if (this$._s !== 2) {
           return rej(err(0));
         }
         this$._status(0);
-        this$._ws = null;
         if (this$._ctrl.disconnector) {
           return this$._ctrl.disconnector.res();
         }
       });
-      return this$._ws.addEventListener('open', function(){
+      this$._ws.addEventListener('open', function(){
         if (!this$._ctrl.canceller) {
           return res();
         }
         this$._ctrl.canceller.res();
         return rej(err(0));
       });
+      return this$._installEventListeners();
     });
   };
   ref$.connect = function(opt){
