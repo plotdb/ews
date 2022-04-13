@@ -54,6 +54,37 @@ Sharedb is bundled in this repo, in following files:
  - `dist/sdb-client.min.js`: client side sharedb wrapper
  - `dist/sdb-server.min.js`: server side sharedb wrapper
 
+
+### sdb-client
+
+prepare a `ews` object:
+
+      ws = new ews({url: ...});
+
+create a sdb-client everytime the ews object (re)connected:
+
+      ws.on("open", function() {
+        sdb = new ews.sdb-client({ws: ws});
+        sdb.connect().then( ... );
+      });
+
+
+### sdb-server
+
+use `http` and `ws` module to create a WebSocket server ( use `express` as example ):
+
+    sdbServer = require("ews/sdb-server")
+    app = express();
+    server = http.createServer(express());
+    wss = new ws.Server({ server: server });
+    ret = sdb-server({io: {postgres configuration ...} , wss})
+    wss.on("connection", function(ws, req) {
+      /* you can still use the created ws object */
+      var myws = new ews({ws});
+      ...
+    });
+
+
 ## License
 
 MIT
