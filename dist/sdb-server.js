@@ -43,7 +43,7 @@
         var wjs;
         return backend.listen(wjs = websocketJsonStream(sws), req);
       })['catch'](function(e){
-        return console.log("[sdb-server] wss on connection error: ", e.message || e);
+        return console.log("[sdb-server] wss on connection error: ", e.message, e);
       });
       return ws.on('close', function(){});
     });

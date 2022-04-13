@@ -73,7 +73,7 @@ create a sdb-client everytime the ews object (re)connected:
 
 use `http` and `ws` module to create a WebSocket server ( use `express` as example ):
 
-    sdbServer = require("ews/sdb-server")
+    sdbServer = require("@plotdb/ews/sdb-server")
     app = express();
     server = http.createServer(express());
     wss = new ws.Server({ server: server });

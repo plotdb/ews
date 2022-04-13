@@ -50,7 +50,7 @@ sdb-server = (opt) ->
       # user = session and session.passport and session.passport.user
       backend.listen (wjs = websocket-json-stream(sws)), req
     .catch (e) ->
-      console.log "[sdb-server] wss on connection error: ", (e.message or e)
+      console.log "[sdb-server] wss on connection error: ", e.message, e
     ws.on \close, ->
 
   # 3. Backend handle sharedb connect.

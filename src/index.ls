@@ -47,7 +47,7 @@ ews.prototype = Object.create(Object.prototype) <<<
 
   _installEventListener: (t, cb, o, fromon) ->
     if !@_ws => return
-    if t != \message => return @_ws.addEventListener t, cb, o
+    if t != \message => return @_ws.addEventListener t, cb, (o or {})
     ((scope, fromon) ~>
       @_ws.addEventListener t, (hdr = (e) ~>
         if !e.data.startsWith("#{@_scope}|") => return
@@ -59,7 +59,7 @@ ews.prototype = Object.create(Object.prototype) <<<
           ports: e.ports
           source: e.source
         cb evt
-      ), o
+      ), (o or {})
       @_hdr.set cb, hdr
     )(@_scope, fromon)
 

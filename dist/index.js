@@ -69,7 +69,7 @@
       return;
     }
     if (t !== 'message') {
-      return this._ws.addEventListener(t, cb, o);
+      return this._ws.addEventListener(t, cb, o || {});
     }
     return function(scope, fromon){
       var hdr;
@@ -89,7 +89,7 @@
           source: e.source
         });
         return cb(evt);
-      }, o);
+      }, o || {});
       return this$._hdr.set(cb, hdr);
     }(this._scope, fromon);
   }, ref$._installEventListeners = function(){
