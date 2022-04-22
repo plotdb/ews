@@ -1,5 +1,10 @@
 # Change Logs
 
+## v0.0.4
+
+ - add missing dependencies for server side usage
+
+
 ## v0.0.3
 
  - internal event listeners should be run before user event listeners

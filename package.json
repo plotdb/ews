@@ -1,19 +1,26 @@
 {
   "name": "@plotdb/ews",
-  "version": "0.0.3",
-  "description": "",
-  "main": "index.js",
-  "browser": "dist/index.min.js",
+  "version": "0.0.4",
+  "description": "elastic websocket",
   "main": "dist/index.min.js",
+  "browser": "dist/index.min.js",
   "files": [
     "dist/**/*"
   ],
   "scripts": {
     "start": "./node_modules/.bin/lsc web/server.ls"
   },
-  "keywords": ["websocket"],
+  "keywords": [
+    "websocket"
+  ],
   "author": "zbryikt",
   "license": "MIT",
+  "dependencies": {
+    "@plotdb/sharedb-postgres": "^4.0.1",
+    "sharedb": "^2.2.5",
+    "sharedb-pg-mdb": "^0.0.2",
+    "websocket-json-stream": "^0.0.3"
+  },
   "devDependencies": {
     "@loadingio/bootstrap.ext": "^0.0.6",
     "@loadingio/debounce.js": "^1.0.1",
@@ -32,7 +39,6 @@
     "ldview": "^1.1.1",
     "livescript": "^1.6.0",
     "proxise": "^1.0.1",
-    "sharedb": "^2.2.5",
     "sharedb-wrapper": "^3.0.2",
     "uglify-js": "^3.15.4",
     "uglifyify": "^5.0.2",
