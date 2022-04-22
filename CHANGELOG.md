@@ -1,5 +1,10 @@
 # Change Logs
 
+## v0.0.5
+
+ - again add missing dependency `ws` for server side usage
+
+
 ## v0.0.4
 
  - add missing dependencies for server side usage
