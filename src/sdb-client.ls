@@ -3,7 +3,7 @@ ews.sdb-client = (opt = {}) ->
     _evthdr: {}
     _connection: null # sharedb connection object
     _ws: opt.ws
-  @_ws.addEventListener \close, -> @ <<< _connection: null, _sws: null
+  @_ws.addEventListener \close, ~> @ <<< _connection: null, _sws: null
   @
 
 ews.sdb-client.prototype = Object.create(Object.prototype) <<< do

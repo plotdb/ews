@@ -1,5 +1,6 @@
 (function(){
   ews.sdbClient = function(opt){
+    var this$ = this;
     opt == null && (opt = {});
     import$(this, {
       _evthdr: {},
@@ -7,7 +8,7 @@
       _ws: opt.ws
     });
     this._ws.addEventListener('close', function(){
-      return this._connection = null, this._sws = null, this;
+      return this$._connection = null, this$._sws = null, this$;
     });
     return this;
   };

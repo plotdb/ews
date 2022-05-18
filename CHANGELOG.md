@@ -1,5 +1,10 @@
 # Change Logs
 
+## v0.0.6
+
+ - fix bug: disconnect handler doesn't correctly clean up internal variables
+
+
 ## v0.0.5
 
  - again add missing dependency `ws` for server side usage
