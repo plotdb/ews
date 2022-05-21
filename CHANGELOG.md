@@ -1,5 +1,11 @@
 # Change Logs
 
+## v0.0.7
+
+ - fire `close` event in sharedb client when socket closed
+ - document events in sharedb client
+
+
 ## v0.0.6
 
  - fix bug: disconnect handler doesn't correctly clean up internal variables

@@ -8,7 +8,9 @@
       _ws: opt.ws
     });
     this._ws.addEventListener('close', function(){
-      return this$._connection = null, this$._sws = null, this$;
+      this$._connection = null;
+      this$._sws = null;
+      return this$.fire('close');
     });
     return this;
   };

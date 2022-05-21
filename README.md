@@ -68,6 +68,11 @@ create a sdb-client everytime the ews object (re)connected:
         sdb.connect().then( ... );
       });
 
+Additionally, following events are available in sdb-client:
+
+ - `close`: socket is closed.
+ - `error`: fired when receiving `error` events from sharedb `Doc`
+
 
 ### sdb-server
 

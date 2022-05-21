@@ -1,6 +1,6 @@
 {
   "name": "@plotdb/ews",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "elastic websocket",
   "main": "dist/index.min.js",
   "browser": "dist/index.min.js",
