@@ -33,12 +33,9 @@ ews.sdb-client.prototype = Object.create(Object.prototype) <<< do
 
   connect: ->
     if @_connection => return Promise.resolve!
-    p = if @_ws.status! != 2 => @_ws.connect!
-    # TODO not quite sure why. remove the whole promise?
-    # we may want @_connection created immediately
-    p = if false =>
-    else Promise.resolve!
-    p
+    if @_ws.status! != 2 => @_ws.connect!
+    # Should we wait until @_ws is connected? Probably don't have to.
+    Promise.resolve!
       .then ~>
         @_sws = new ews ws: @_ws, scope: \sharedb
         @_connection = new sharedb.Connection @_sws
