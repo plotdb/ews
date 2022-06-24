@@ -1,5 +1,10 @@
 # Change Logs
 
+## v0.0.8
+
+ - support immediately reconnect option
+
+
 ## v0.0.7
 
  - fire `close` event in sharedb client when socket closed

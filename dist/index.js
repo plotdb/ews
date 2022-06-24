@@ -276,6 +276,11 @@
     if (this._s === 2) {
       return Promise.reject(err(1011));
     }
+    if (opt.now && cc.hdr) {
+      clearTimeout(cc.hdr);
+      cc.hdr = null;
+      this._status(0);
+    }
     return new Promise(function(res, rej){
       var retry, _;
       cc.pending.push({

@@ -28,6 +28,7 @@ API (ews):
    - options:
      - `retry`: automatically retry if set to true. default true.
      - `delay`: delay ( in millisecond) before first connection attmpt. default 0
+     - `now`: reset current reconnection attempts and start a new attempt immediately
  - `cancel()`: cancel connection. return Promise, resolves when connection canceled.
    - reject lderror 1026 if no connection to cancel.
  - `status()`: get connection status. return a integer with following possible values:

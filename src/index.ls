@@ -139,6 +139,10 @@ ews.prototype <<<
   connect: (opt = {}) ->
     cc = @_ctrl
     if @_s == 2 => return Promise.reject(err 1011)
+    if opt.now and cc.hdr =>
+      clearTimeout cc.hdr
+      cc.hdr = null
+      @_status 0
     (res, rej) <~ new Promise _
     cc.pending.push {res, rej}
     if @_s == 1 => return
