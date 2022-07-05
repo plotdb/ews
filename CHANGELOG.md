@@ -2,10 +2,9 @@
 
 ## v0.0.9
 
- - support metadata injection.
  - remove `id` from `access` function in readSnapshots for multi-snapsthos scenario
  - support `submit` hook for access checking
- - support `metadata` called with `commit` hook.
+ - support metadata injection with `metadata` called with `commit` hook.
  - refind document for `access` and `metadata` parameters.
 
 
