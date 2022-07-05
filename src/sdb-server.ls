@@ -2,7 +2,7 @@ require! <[sharedb @plotdb/sharedb-postgres sharedb-pg-mdb ws http websocket-jso
 ews = require "./index"
 
 sdb-server = (opt) ->
-  {app, io, session, access, milestone-db, wss} = opt
+  {app, io, session, access, milestone-db, wss, metadata} = opt
 
   server = null
   mdb = if (milestone-db and milestone-db.enabled) =>
@@ -59,40 +59,33 @@ sdb-server = (opt) ->
   backend.use \connect, ({agent, req, stream}, cb) ->
     if !req or !stream.ws => return cb!
     session = req.session
-    user = session and session.passport and session.passport.user
+    user = (session and session.passport and session.passport.user) or {}
     agent.custom <<< {req, session, user}
     cb!
 
-  # 4. Backend handle readSnapshot request
-  #    Decide if an user can get access to certain doc.
-  backend.use \readSnapshots, ({collection, snapshots, agent}, cb) ->
-    # no websocket - it's server stream
-    if !agent.stream.ws => return cb!
-    {req, session, user} = agent.custom
-    id = (snapshots.0 or {}).id
-    (if access? => access({user, session, collection, id, snapshots, type: \readSnapshots}) else Promise.resolve!)
-      .then -> cb!
-      .catch (e) -> cb(e or (new Error! <<< {name: \lderror, id: 1012}))
+  # 4.a Backend handle metadata request
+  if metadata? =>
+    backend.use \commit, ({collection, agent, snapshot, op, id}, cb) ->
+      if !agent.stream.ws => return cb!
+      {req, session, user} = agent.custom
+      metadata({m: op.m} <<< agent.custom)
+      cb!
 
-  # access control in both reply and receive middleware
-  backend.use \reply, ({collection, agent, reply}, cb) ->
-    if !agent.stream.ws => return cb!
-    {req, session, user} = agent.custom
-    act = reply.a
-    id = reply.d
-    cb!
-    #(if act != \hs and access? => access({user, session, collection, id, type: \reply}) else Promise.resolve!)
-    #  .then -> cb!
-    #  .catch (e) -> cb(e or (new Error! <<< {name: \lderror, id: 1012}))
-  backend.use \receive, ({collection, agent, data}, cb) ->
-    if !agent.stream.ws => return cb!
-    {req, session, user} = agent.custom
-    act = data.a
-    id = data.d
-    cb!
-    #(if act != \hs and access? => access({user, session, collection, id, data, type: \receive}) else Promise.resolve!)
-    #  .then -> cb!
-    #  .catch -> cb(e or (new Error! <<< {name: \lderror, id: 1012}))
+  # 4.b Backend handle readSnapshot request
+  #     Decide if an user can get access to certain doc.
+  if access? =>
+    backend.use \readSnapshots, ({agent, collection, snapshots}, cb) ->
+      # no websocket - it's server stream
+      if !agent.stream.ws => return cb!
+      id = if snapshots.length > 1 => null else snapshots.0.id
+      access({id, collection, snapshots, type: \readSnapshots} <<< agent.custom)
+        .then -> cb!
+        .catch (e) -> cb(e or (new Error! <<< {name: \lderror, id: 1012}))
+    backend.use \submit, ({collection, agent, id}, cb) ->
+      if !agent.stream.ws => return cb!
+      access({id, collection, type: \submit} <<< agent.custom)
+        .then -> cb!
+        .catch (e) -> cb(e or (new Error! <<< {name: \lderror, id: 1012}))
 
   ret = { server, sdb: backend, connect, wss }
 

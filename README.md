@@ -91,6 +91,49 @@ use `http` and `ws` module to create a WebSocket server ( use `express` as examp
     });
 
 
+### Metadata
+
+If `metadata(opt)` function is provided, it will be called when `commit` hook is triggered with an object including following parameters:
+
+ - `m`: the metadata object from sharedb op.
+ - `type`: either `readSnapshots` or `submit`.
+ - `collection`: target collection.
+ - `id`: target doc id. This will be null if there are multiple doc ids - in this case, check `snapshots` instead.
+ - `req`: the express request object.
+ - `session`: shorthand for `req.session` from `express-session`.
+ - `user`: shorthand for `session.user` from `passport`.
+
+edit the `m` field directly to inject necessary metadata. For example, add user id:
+
+    metadata = ({m, user, session, collection, id, snaptshos}) -> m.user = (if user? => user.key else 0)
+
+
+### Access Control
+
+If `access` is function provided, it will be called in following hooks:
+
+ - `readSnapshots`
+ - `submit`
+
+`access(opt)` is called with an object containing following paramters:
+
+ - `type`: either `readSnapshots` or `submit`.
+ - `collection`: target collection.
+ - `id`: target doc id. This will be null if there are multiple doc ids - in this case, check `snapshots` instead.
+ - `snapshots`: array of snapshots. Only provided when called by `readSnapshots` hook.
+ - `req`: the express request object.
+ - `session`: shorthand for `req.session` from `express-session`.
+ - `user`: shorthand for `session.user` from `passport`.
+
+`access(opt)` should return a Promise which only resolve when access is granted. By default the returned promise reject a lderror id 1012 error when access is denied.
+
+Here is an example to prevent new document creation: 
+
+    access = ({snapshots}) ->
+      if snapshots and !(snapshots.0.id) => return Promise.reject(new Error("") <<< {name: 'lderror', id: 1012});
+      return Promise.resolve!
+
+
 ## License
 
 MIT

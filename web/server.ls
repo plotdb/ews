@@ -8,11 +8,11 @@ root = path.join(path.dirname(fs.realpathSync __filename.replace(/\(js\)$/,'')),
 config = do
   pg: do
     uri: "postgres://grantdash:pg@#{process.env.DB_HOST or \localhost}/pg"
-    database: "xinmeti"
-    user: "xinmeti"
-    password: "itemnix"
+    database: "pg"
+    user: "pg"
+    password: "pg"
     host: "#{process.env.DB_HOST or \localhost}"
-    port: "#{process.env.DB_PORT or 5432}"
+    port: "#{process.env.DB_PORT or 15432}"
 
 server = do
   init: ->
@@ -21,7 +21,10 @@ server = do
 
     server = http.create-server app
     wss = new ws.Server { server: server }
-    {sdb,connect} = sharedb-wrapper {app, io: config.pg, wss}
+
+    access = ({user, session}) -> Promise.resolve!
+    metadata = ({m, user, session}) -> m.user = 1
+    {sdb,connect} = sharedb-wrapper {app, io: config.pg, wss, access, metadata}
 
     wss.on \connection, (ws, req) ->
       myws = new ews {ws}

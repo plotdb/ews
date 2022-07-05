@@ -8,8 +8,8 @@
   websocketJsonStream = require('websocket-json-stream');
   ews = require("./index");
   sdbServer = function(opt){
-    var app, io, session, access, milestoneDb, wss, server, mdb, backend, connect, ret;
-    app = opt.app, io = opt.io, session = opt.session, access = opt.access, milestoneDb = opt.milestoneDb, wss = opt.wss;
+    var app, io, session, access, milestoneDb, wss, metadata, server, mdb, backend, connect, ret;
+    app = opt.app, io = opt.io, session = opt.session, access = opt.access, milestoneDb = opt.milestoneDb, wss = opt.wss, metadata = opt.metadata;
     server = null;
     mdb = milestoneDb && milestoneDb.enabled ? new sharedbPgMdb({
       ioPg: io,
@@ -54,59 +54,67 @@
         return cb();
       }
       session = req.session;
-      user = session && session.passport && session.passport.user;
+      user = (session && session.passport && session.passport.user) || {};
       ref$ = agent.custom;
       ref$.req = req;
       ref$.session = session;
       ref$.user = user;
       return cb();
     });
-    backend.use('readSnapshots', function(arg$, cb){
-      var collection, snapshots, agent, ref$, req, session, user, id;
-      collection = arg$.collection, snapshots = arg$.snapshots, agent = arg$.agent;
-      if (!agent.stream.ws) {
+    if (metadata != null) {
+      backend.use('commit', function(arg$, cb){
+        var collection, agent, snapshot, op, id, ref$, req, session, user;
+        collection = arg$.collection, agent = arg$.agent, snapshot = arg$.snapshot, op = arg$.op, id = arg$.id;
+        if (!agent.stream.ws) {
+          return cb();
+        }
+        ref$ = agent.custom, req = ref$.req, session = ref$.session, user = ref$.user;
+        metadata(import$({
+          m: op.m
+        }, agent.custom));
         return cb();
-      }
-      ref$ = agent.custom, req = ref$.req, session = ref$.session, user = ref$.user;
-      id = (snapshots[0] || {}).id;
-      return (access != null
-        ? access({
-          user: user,
-          session: session,
-          collection: collection,
+      });
+    }
+    if (access != null) {
+      backend.use('readSnapshots', function(arg$, cb){
+        var agent, collection, snapshots, id;
+        agent = arg$.agent, collection = arg$.collection, snapshots = arg$.snapshots;
+        if (!agent.stream.ws) {
+          return cb();
+        }
+        id = snapshots.length > 1
+          ? null
+          : snapshots[0].id;
+        return access(import$({
           id: id,
+          collection: collection,
           snapshots: snapshots,
           type: 'readSnapshots'
-        })
-        : Promise.resolve()).then(function(){
-        return cb();
-      })['catch'](function(e){
-        var ref$;
-        return cb(e || (ref$ = new Error(), ref$.name = 'lderror', ref$.id = 1012, ref$));
+        }, agent.custom)).then(function(){
+          return cb();
+        })['catch'](function(e){
+          var ref$;
+          return cb(e || (ref$ = new Error(), ref$.name = 'lderror', ref$.id = 1012, ref$));
+        });
       });
-    });
-    backend.use('reply', function(arg$, cb){
-      var collection, agent, reply, ref$, req, session, user, act, id;
-      collection = arg$.collection, agent = arg$.agent, reply = arg$.reply;
-      if (!agent.stream.ws) {
-        return cb();
-      }
-      ref$ = agent.custom, req = ref$.req, session = ref$.session, user = ref$.user;
-      act = reply.a;
-      id = reply.d;
-      return cb();
-    });
-    backend.use('receive', function(arg$, cb){
-      var collection, agent, data, ref$, req, session, user, act, id;
-      collection = arg$.collection, agent = arg$.agent, data = arg$.data;
-      if (!agent.stream.ws) {
-        return cb();
-      }
-      ref$ = agent.custom, req = ref$.req, session = ref$.session, user = ref$.user;
-      act = data.a;
-      id = data.d;
-      return cb();
-    });
+      backend.use('submit', function(arg$, cb){
+        var collection, agent, id;
+        collection = arg$.collection, agent = arg$.agent, id = arg$.id;
+        if (!agent.stream.ws) {
+          return cb();
+        }
+        return access(import$({
+          id: id,
+          collection: collection,
+          type: 'submit'
+        }, agent.custom)).then(function(){
+          return cb();
+        })['catch'](function(e){
+          var ref$;
+          return cb(e || (ref$ = new Error(), ref$.name = 'lderror', ref$.id = 1012, ref$));
+        });
+      });
+    }
     return ret = {
       server: server,
       sdb: backend,
@@ -115,4 +123,9 @@
     };
   };
   module.exports = sdbServer;
+  function import$(obj, src){
+    var own = {}.hasOwnProperty;
+    for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+    return obj;
+  }
 }).call(this);
