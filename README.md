@@ -130,8 +130,12 @@ If `access` is function provided, it will be called in following hooks:
 Here is an example to prevent new document creation: 
 
     access = ({snapshots}) ->
-      if snapshots and !(snapshots.0.id) => return Promise.reject(new Error("") <<< {name: 'lderror', id: 1012});
+      if snapshots and !(snapshots.0.id) =>
+        return lderror.reject 1012
       return Promise.resolve!
+
+Please note that ShareDB logs rejected errors (by recognizing its `stack` attribute) and wrap errors in `{code, message}` format. Consider rejecting a plain lderror object as above example, `@plotdb/ews` will wrap/parse your lderror objects for you so you can receive a correct lderror object in frontend.
+
 
 
 ## License

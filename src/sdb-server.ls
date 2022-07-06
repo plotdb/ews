@@ -1,6 +1,18 @@
 require! <[sharedb @plotdb/sharedb-postgres sharedb-pg-mdb ws http websocket-json-stream]>
 ews = require "./index"
 
+# according to `lib/agent.js`, sharedb send Error to frontend as objects in `{code, message}` format:
+#  - https://github.com/share/sharedb/blob/master/lib/agent.js#L288 (`getReplyErrorObject` function)
+# where allowed error code (as string) can be found here:
+#  - https://github.com/share/sharedb/blob/master/lib/error.js#L15
+# however, this blocks our custom error object.
+# thus, we use a custom error code `wrapped-lderror` and stringify lderror in `message` field,
+# so we can decode it in frontend.
+lderror-wrapper = (e) ->
+  if !e => e = {name: \lderror, id: 1012}
+  if e.name != \lderror => e
+  else {code: "wrapped-lderror", message: JSON.stringify(e{id,name,message})}
+
 sdb-server = (opt) ->
   {app, io, session, access, milestone-db, wss, metadata} = opt
 
@@ -80,12 +92,12 @@ sdb-server = (opt) ->
       id = if snapshots.length > 1 => null else snapshots.0.id
       access({id, collection, snapshots, type: \readSnapshots} <<< agent.custom)
         .then -> cb!
-        .catch (e) -> cb(e or (new Error! <<< {name: \lderror, id: 1012}))
+        .catch (e) -> cb lderror-wrapper e
     backend.use \submit, ({collection, agent, id}, cb) ->
       if !agent.stream.ws => return cb!
       access({id, collection, type: \submit} <<< agent.custom)
         .then -> cb!
-        .catch (e) -> cb(e or (new Error! <<< {name: \lderror, id: 1012}))
+        .catch (e) -> cb lderror-wrapper e
 
   ret = { server, sdb: backend, connect, wss }
 

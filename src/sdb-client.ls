@@ -22,14 +22,17 @@ ews.sdb-client.prototype = Object.create(Object.prototype) <<< do
 
   get: ({id, watch, create, collection}) ->
     <~ (if !@_connection => @connect! else Promise.resolve!).then _
-    (res, rej) <~ new Promise _
-    doc = @_connection.get (if collection? => collection else \doc), id
-    (e) <~ doc.fetch _
-    if e => return rej e
-    doc.subscribe (ops, source) -> res doc
-    doc.on \error, (err) ~> @fire \error, {doc, err}
-    if watch? => doc.on \op, (ops, source) -> watch ops, source
-    if !doc.type => doc.create ((if create => create! else null) or {})
+    p = new Promise (res, rej) ~>
+      doc = @_connection.get (if collection? => collection else \doc), id
+      (e) <~ doc.fetch _
+      if e => return rej e
+      doc.subscribe (ops, source) -> res doc
+      doc.on \error, (err) ~> @fire \error, {doc, err}
+      if watch? => doc.on \op, (ops, source) -> watch ops, source
+      if !doc.type => doc.create ((if create => create! else null) or {})
+    p.catch (e) ~>
+      if e.code == \wrapped-lderror => e = new Error! <<< JSON.parse(e.message)
+      Promise.reject e
 
   connect: ->
     if @_connection => return Promise.resolve!

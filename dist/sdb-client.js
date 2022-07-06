@@ -56,7 +56,8 @@
       return (!this._connection
         ? this.connect()
         : Promise.resolve()).then(function(){
-        return new Promise(function(res, rej){
+        var p;
+        p = new Promise(function(res, rej){
           var doc;
           doc = this$._connection.get(collection != null ? collection : 'doc', id);
           return doc.fetch(function(e){
@@ -81,6 +82,12 @@
               return doc.create((create ? create() : null) || {});
             }
           });
+        });
+        return p['catch'](function(e){
+          if (e.code === 'wrapped-lderror') {
+            e = import$(new Error(), JSON.parse(e.message));
+          }
+          return Promise.reject(e);
         });
       });
     },

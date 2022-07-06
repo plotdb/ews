@@ -1,5 +1,10 @@
 # Change Logs
 
+## v0.0.10
+
+ - wrap lderror in sharedb error format so we can't decode it back to a lderror object in client side.
+
+
 ## v0.0.9
 
  - remove `id` from `access` function in readSnapshots for multi-snapsthos scenario

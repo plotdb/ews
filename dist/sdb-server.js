@@ -1,5 +1,5 @@
 (function(){
-  var sharedb, sharedbPostgres, sharedbPgMdb, ws, http, websocketJsonStream, ews, sdbServer;
+  var sharedb, sharedbPostgres, sharedbPgMdb, ws, http, websocketJsonStream, ews, lderrorWrapper, sdbServer;
   sharedb = require('sharedb');
   sharedbPostgres = require('@plotdb/sharedb-postgres');
   sharedbPgMdb = require('sharedb-pg-mdb');
@@ -7,6 +7,26 @@
   http = require('http');
   websocketJsonStream = require('websocket-json-stream');
   ews = require("./index");
+  lderrorWrapper = function(e){
+    if (!e) {
+      e = {
+        name: 'lderror',
+        id: 1012
+      };
+    }
+    if (e.name !== 'lderror') {
+      return e;
+    } else {
+      return {
+        code: "wrapped-lderror",
+        message: JSON.stringify({
+          id: e.id,
+          name: e.name,
+          message: e.message
+        })
+      };
+    }
+  };
   sdbServer = function(opt){
     var app, io, session, access, milestoneDb, wss, metadata, server, mdb, backend, connect, ret;
     app = opt.app, io = opt.io, session = opt.session, access = opt.access, milestoneDb = opt.milestoneDb, wss = opt.wss, metadata = opt.metadata;
@@ -93,8 +113,7 @@
         }, agent.custom)).then(function(){
           return cb();
         })['catch'](function(e){
-          var ref$;
-          return cb(e || (ref$ = new Error(), ref$.name = 'lderror', ref$.id = 1012, ref$));
+          return cb(lderrorWrapper(e));
         });
       });
       backend.use('submit', function(arg$, cb){
@@ -110,8 +129,7 @@
         }, agent.custom)).then(function(){
           return cb();
         })['catch'](function(e){
-          var ref$;
-          return cb(e || (ref$ = new Error(), ref$.name = 'lderror', ref$.id = 1012, ref$));
+          return cb(lderrorWrapper(e));
         });
       });
     }
