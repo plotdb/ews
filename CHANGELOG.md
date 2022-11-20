@@ -1,5 +1,12 @@
 # Change Logs
 
+## v0.0.11 (upcoming)
+
+ - fix bug: pipe create new ews which depends on source ws, however source ws may update, may not ready yet,
+   lead to unusable piped ews. additional tracing from root ews is added to update the whole ews pipe tree.
+ - upgrade dependencies
+
+
 ## v0.0.10
 
  - wrap lderror in sharedb error format so we can't decode it back to a lderror object in client side.
