@@ -136,7 +136,9 @@ ews.prototype <<<
     if @_ws => return rej(err 1011)
     if !@_url => return rej(err 1026)
     @_ws = new WebSocket @_url
-    @_svl.map (d) ~> d._ws = @_ws
+    @_svl.map (d) ~>
+      d._ws = @_ws
+      d._installEventListeners!
 
     @_ws.addEventListener \close, ~>
       @_ws = null

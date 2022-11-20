@@ -1,5 +1,10 @@
 # Change Logs
 
+## v0.0.12
+
+ - fix bug: ws refresh causes ews losing event handlers.
+
+
 ## v0.0.11
 
  - fix bug: pipe create new ews which depends on source ws, however source ws may update, may not ready yet,

@@ -269,7 +269,8 @@
       }
       this$._ws = new WebSocket(this$._url);
       this$._svl.map(function(d){
-        return d._ws = this$._ws;
+        d._ws = this$._ws;
+        return d._installEventListeners();
       });
       this$._ws.addEventListener('close', function(){
         this$._ws = null;
