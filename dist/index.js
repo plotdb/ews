@@ -7,10 +7,10 @@
   ews = function(o){
     var r;
     o == null && (o = {});
-    this._src = o.src;
     this._scheme = o.scheme;
     this._domain = o.domain;
     this._path = o.path;
+    this._svl = [];
     if (o.url && !o.ws) {
       this._url = o.url;
       if (r = /^(\S+):\/\/([^\s\/]+)\/(.+)$/.exec(this._url)) {
@@ -33,10 +33,17 @@
       : this._path[0] !== '/'
         ? "/" + this._path
         : this._path;
+    this._src = o.src;
     if (o.ws) {
-      this._ws = o.ws instanceof ews
-        ? o.ws.ws()
-        : o.ws;
+      if (o.ws instanceof ews) {
+        this._ws = o.ws.ws();
+        this._src = o.ws._src || o.ws;
+      } else {
+        this._ws = o.ws;
+      }
+    }
+    if (this._src) {
+      this._src._supervise(this);
     }
     if (!(this._ws || this._url)) {
       this._url = this._scheme + "://" + this._domain + this._path;
@@ -238,6 +245,18 @@
       src: this
     });
   };
+  ref$._supervise = function(o, a){
+    a == null && (a = true);
+    if (in$(o, this._svl)) {
+      if (a) {} else {
+        return this._svl.splice(this._svl.indexOf(o), 1);
+      }
+    } else {
+      if (a) {
+        return this._svl.push(o);
+      } else {}
+    }
+  };
   ref$._connect = function(opt){
     var this$ = this;
     opt == null && (opt = {});
@@ -249,8 +268,14 @@
         return rej(err(1026));
       }
       this$._ws = new WebSocket(this$._url);
+      this$._svl.map(function(d){
+        return d._ws = this$._ws;
+      });
       this$._ws.addEventListener('close', function(){
         this$._ws = null;
+        this$._svl.map(function(d){
+          return d._ws = null;
+        });
         if (this$._s !== 2) {
           return rej(err(0));
         }
@@ -379,5 +404,10 @@
     module.exports = ews;
   } else if (typeof window != 'undefined' && window !== null) {
     window.ews = ews;
+  }
+  function in$(x, xs){
+    var i = -1, l = xs.length >>> 0;
+    while (++i < l) if (x === xs[i]) return true;
+    return false;
   }
 }).call(this);

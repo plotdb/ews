@@ -1,8 +1,12 @@
 err = (e) -> new Error! <<< {name: \lderror, id: e}
 
 ews = (o = {}) ->
-  @_src = o.src
-  @ <<< {_scheme: o.scheme, _domain: o.domain, _path: o.path}
+  @ <<< {
+    _scheme: o.scheme, _domain: o.domain, _path: o.path
+    # we can pipe offspring ews, but the original ws is maintained by the root ews.
+    # the root ews use _svl to trace and update child ews if ws is renewed.
+    _svl: [] # SuperVised List; list of ews supervised by @
+  }
 
   if o.url and !o.ws =>
     @_url = o.url
@@ -18,7 +22,14 @@ ews = (o = {}) ->
   @_domain = @_domain or if window? => window.location.host else null
   @_path = if !@_path => \/ else if @_path[0] != \/ => "/#{@_path}" else @_path
 
-  if o.ws => @_ws = if o.ws instanceof ews => o.ws.ws! else o.ws
+  @_src = o.src
+  if o.ws =>
+    if o.ws instanceof ews =>
+      @_ws = o.ws.ws!
+      @_src = o.ws._src or o.ws
+    else @_ws = o.ws
+  if @_src => @_src._supervise(@)
+
   if !(@_ws or @_url) => @_url = "#{@_scheme}://#{@_domain}#{@_path}"
   if !@_ws and @_url => @_origin = true
   @_scope = o.scope or ''
@@ -67,7 +78,7 @@ ews.prototype = Object.create(Object.prototype) <<<
     )(@_scope, fromon)
 
   _installEventListeners: ->
-    for t, list of @_evthdr => 
+    for t, list of @_evthdr =>
       for {cb, o, fromon} in list => @_installEventListener t, cb, o, fromon
 
   # TODO: wrap / unwrap scope?
@@ -107,16 +118,29 @@ ews.prototype <<<
     if n in <[message open close error]> => throw new Error("fire should not be used to fire native events")
     for cb in (@_evthdr[n] or []) => cb.apply @, v
   ws: -> @_ws
+  # @_supervise is called in the result ews constructor
+  # since user can constructor the result manually
   pipe: (s = '') -> new ews({ws: @_ws, scope: "#{@_scope}/#s", src: @})
+  # x._supervise(o) = x manages _ws for `o`
+  # o: ews to be managed.
+  # a: true to add o in the
+  # this is called by o in its constructor
+  _supervise: (o, a = true) ->
+    if o in @_svl =>
+      if a => return else @_svl.splice(@_svl.indexOf(o),1)
+    else
+      if a => @_svl.push o else return
 
   # resolves if connected. otherwise rejects.
   _connect: (opt = {}) -> new Promise (res, rej) ~>
     if @_ws => return rej(err 1011)
     if !@_url => return rej(err 1026)
     @_ws = new WebSocket @_url
+    @_svl.map (d) ~> d._ws = @_ws
 
     @_ws.addEventListener \close, ~>
       @_ws = null
+      @_svl.map (d) ~> d._ws = null
       # Promise is resolved if ever connected so we don't reject.
       # Besides, `close` is fired only if ever connected.
       # if not yet connected, we are still connecting so we shouldn't fire close event.
