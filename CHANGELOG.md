@@ -1,6 +1,6 @@
 # Change Logs
 
-## v0.0.11 (upcoming)
+## v0.0.11
 
  - fix bug: pipe create new ews which depends on source ws, however source ws may update, may not ready yet,
    lead to unusable piped ews. additional tracing from root ews is added to update the whole ews pipe tree.
