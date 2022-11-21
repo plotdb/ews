@@ -1,5 +1,10 @@
 # Change Logs
 
+## v0.0.13
+
+ - pass `op` parameter from middleware `submit` action to access function for fine-grained access control
+
+
 ## v0.0.12
 
  - fix bug: ws refresh causes ews losing event handlers.

@@ -117,14 +117,15 @@
         });
       });
       backend.use('submit', function(arg$, cb){
-        var collection, agent, id;
-        collection = arg$.collection, agent = arg$.agent, id = arg$.id;
+        var collection, agent, op, id;
+        collection = arg$.collection, agent = arg$.agent, op = arg$.op, id = arg$.id;
         if (!agent.stream.ws) {
           return cb();
         }
         return access(import$({
           id: id,
           collection: collection,
+          op: op,
           type: 'submit'
         }, agent.custom)).then(function(){
           return cb();

@@ -93,9 +93,9 @@ sdb-server = (opt) ->
       access({id, collection, snapshots, type: \readSnapshots} <<< agent.custom)
         .then -> cb!
         .catch (e) -> cb lderror-wrapper e
-    backend.use \submit, ({collection, agent, id}, cb) ->
+    backend.use \submit, ({collection, agent, op, id}, cb) ->
       if !agent.stream.ws => return cb!
-      access({id, collection, type: \submit} <<< agent.custom)
+      access({id, collection, op, type: \submit} <<< agent.custom)
         .then -> cb!
         .catch (e) -> cb lderror-wrapper e
 
