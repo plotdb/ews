@@ -61,10 +61,51 @@
       canceller: null,
       disconnector: null
     };
+    this._ping = {
+      hdr: null,
+      interval: 60
+    };
     this._s = 0;
     return this;
   };
-  ews.prototype = (ref$ = Object.create(Object.prototype), ref$.addEventListener = function(t, cb, o, fromon){
+  ews.prototype = (ref$ = Object.create(Object.prototype), ref$.unping = function(){
+    var ref$;
+    clearTimeout(this._ping.hdr);
+    document.removeEventListener('visibilitychange', this._ping.check);
+    return ref$ = this._ping, ref$.hdr = null, ref$.running = false, ref$;
+  }, ref$.ping = function(opt){
+    var ref$, this$ = this;
+    opt == null && (opt = {});
+    if (!this._ping.running) {
+      this._ping.isVisible = function(){
+        return this$._ping.visible = document.visibilityState === 'visible';
+      };
+      this._ping.check = function(){
+        if (this$._ping.isVisible()) {
+          return this$.ping({
+            now: true
+          });
+        }
+      };
+      this._ping.running = true;
+      document.addEventListener('visibilitychange', this._ping.check);
+    }
+    if (this._ping.hdr) {
+      clearTimeout(this._ping.hdr);
+    }
+    if (!this._ping.isVisible) {
+      return;
+    }
+    if (opt.now && this.status() === 2) {
+      this.send("ping");
+    }
+    return this._ping.hdr = setTimeout(function(){
+      this$._ping.hdr = null;
+      return this$.ping({
+        now: true
+      });
+    }, 1000 * ((ref$ = this._ping.interval || 60) > 60 ? ref$ : 60));
+  }, ref$.addEventListener = function(t, cb, o, fromon){
     var ref$;
     if (!(t === 'message' || t === 'open' || t === 'close' || t === 'error')) {
       return;
@@ -392,7 +433,9 @@
     }
   };
   ref$.status = function(){
-    return this._s;
+    return this._src
+      ? this._src.status()
+      : this._s;
   };
   ref$.ensure = function(){
     if (this._s === 2) {

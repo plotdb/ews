@@ -35,7 +35,11 @@ API (ews):
    - `0`: not connected
    - `1`: connecting
    - `2`: connected
-
+ - `ping(opt)`: periodically ping remote server (heartbeat) to prevent disconnecting.
+   - `opt` is an object with following field:
+     - `now`: default false. if false, ping message is sent after ping interval;
+              otherwise it will be sent immediately.
+ - `unping()`: stop ping.
 
 API (from original WebSocket):
 

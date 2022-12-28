@@ -43,12 +43,32 @@ ews = (o = {}) ->
       hdr: null
       canceller: null
       disconnector: null
+    # ping controller
+    _ping: {hdr: null, interval: 60}
     # status. 0: disconnected. 1: connecting. 2: connected.
     _s: 0
   @
 
 # essential websocket APIs
 ews.prototype = Object.create(Object.prototype) <<<
+  unping: ->
+    clearTimeout @_ping.hdr
+    document.removeEventListener \visibilitychange, @_ping.check
+    @_ping <<< hdr: null, running: false
+
+  ping: (opt = {}) ->
+    if !@_ping.running =>
+      @_ping.is-visible = ~> @_ping.visible = (document.visibilityState == \visible)
+      @_ping.check = ~> if @_ping.is-visible! => @ping now: true
+      @_ping.running = true
+      document.addEventListener \visibilitychange, @_ping.check
+    if @_ping.hdr => clearTimeout @_ping.hdr
+    if !@_ping.is-visible => return
+    if opt.now and @status! == 2 => @send("ping")
+    @_ping.hdr = setTimeout (~>
+      @_ping.hdr = null
+      @ping now: true
+    ), (1000 * ((@_ping.interval or 60) >? 60))
 
   # we may add event listener before ws is created.
   # additionally, we may reconnect.
@@ -216,7 +236,7 @@ ews.prototype <<<
     @_s = s
     if s != os => @fire \status, s
 
-  status: -> return @_s
+  status: -> return if @_src => @_src.status! else @_s
   ensure: -> if @_s == 2 => Promise.resolve! else @connect!
 
 

@@ -1,5 +1,11 @@
 # Change Logs
 
+## v0.0.14
+
+ - support `ping` function, which send `ping` message to server every 60s by default if page is visible
+ - fix bug: `status()` should query status from `_src` if this is a scoped ws.
+
+
 ## v0.0.13
 
  - pass `op` parameter from middleware `submit` action to access function for fine-grained access control
