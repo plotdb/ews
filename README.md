@@ -51,6 +51,14 @@ API (from original WebSocket):
  - `on`: (TBD) used by websocket-json-stream
 
 
+## Events
+
+Except original WebSocket events, we provide additional events as follows:
+
+ - `offline`: when network goes offline, this event is fired.
+    - `close` somehow may not yet fired when `offline` is fired, so this can be used to hint user about a dying socket.
+
+
 ## Sharedb
 
 Sharedb is bundled in this repo, in following files:

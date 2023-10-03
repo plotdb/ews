@@ -313,6 +313,10 @@
         d._ws = this$._ws;
         return d._installEventListeners();
       });
+      window.addEventListener('offline', function(){
+        this$.fire('offline');
+        return this$.disconnect();
+      });
       this$._ws.addEventListener('close', function(){
         this$._ws = null;
         this$._svl.map(function(d){

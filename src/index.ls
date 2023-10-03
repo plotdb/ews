@@ -160,6 +160,14 @@ ews.prototype <<<
       d._ws = @_ws
       d._installEventListeners!
 
+    window.addEventListener \offline, ~>
+      # when network disconnected, socket close may not be able to be done immediately -
+      # close event may even not fired until connection is restored.
+      # this is hinted with a offline event, # so we can somehow prevent
+      # further communicating via a dying connection.
+      @fire \offline
+      @disconnect!
+
     @_ws.addEventListener \close, ~>
       @_ws = null
       @_svl.map (d) ~> d._ws = null
@@ -171,7 +179,8 @@ ews.prototype <<<
       if @_s != 2 => return rej(err 0)
       # otherwise, it's a normal close event. we reset status and fire close event.
       @_status 0
-      #@fire \close
+      # we don't have to actually fire close event ourselves here,
+      # since we are already in close event handler.
       if @_ctrl.disconnector => @_ctrl.disconnector.res!
     @_ws.addEventListener \open, ~>
       if !@_ctrl.canceller => return res!

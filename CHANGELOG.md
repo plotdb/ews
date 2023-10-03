@@ -1,5 +1,11 @@
 # Change Logs
 
+## v0.0.15
+
+ - fire `offline` event when offline event received from window.
+ - upgrade dependencies
+
+
 ## v0.0.14
 
  - support `ping` function, which send `ping` message to server every 60s by default if page is visible
