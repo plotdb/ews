@@ -313,22 +313,28 @@
         d._ws = this$._ws;
         return d._installEventListeners();
       });
+      this$.closeHandler = function(){
+        if (!this._ws) {
+          return;
+        }
+        this._ws = null;
+        this._svl.map(function(d){
+          return d._ws = null;
+        });
+        if (this._s !== 2) {
+          return rej(err(0));
+        }
+        this._status(0);
+        this.fire('offline');
+        if (this._ctrl.disconnector) {
+          return this._ctrl.disconnector.res();
+        }
+      };
       window.addEventListener('offline', function(){
-        this$.fire('offline');
         return this$.disconnect();
       });
       this$._ws.addEventListener('close', function(){
-        this$._ws = null;
-        this$._svl.map(function(d){
-          return d._ws = null;
-        });
-        if (this$._s !== 2) {
-          return rej(err(0));
-        }
-        this$._status(0);
-        if (this$._ctrl.disconnector) {
-          return this$._ctrl.disconnector.res();
-        }
+        return this$.closeHandler();
       });
       this$._ws.addEventListener('open', function(){
         if (!this$._ctrl.canceller) {
@@ -407,6 +413,7 @@
       };
     });
     this._ws.close();
+    this.closeHandler();
     return ret;
   };
   ref$.cancel = function(){

@@ -7,7 +7,18 @@
       _connection: null,
       _ws: opt.ws
     });
+    this._ws.addEventListener('offline', function(){
+      if (!(this$._connection && this$._sws)) {
+        return;
+      }
+      this$._connection = null;
+      this$._sws = null;
+      return this$.fire('close');
+    });
     this._ws.addEventListener('close', function(){
+      if (!(this$._connection && this$._sws)) {
+        return;
+      }
       this$._connection = null;
       this$._sws = null;
       return this$.fire('close');

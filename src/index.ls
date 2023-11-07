@@ -160,15 +160,8 @@ ews.prototype <<<
       d._ws = @_ws
       d._installEventListeners!
 
-    window.addEventListener \offline, ~>
-      # when network disconnected, socket close may not be able to be done immediately -
-      # close event may even not fired until connection is restored.
-      # this is hinted with a offline event, # so we can somehow prevent
-      # further communicating via a dying connection.
-      @fire \offline
-      @disconnect!
-
-    @_ws.addEventListener \close, ~>
+    @close-handler = ->
+      if !@_ws => return
       @_ws = null
       @_svl.map (d) ~> d._ws = null
       # Promise is resolved if ever connected so we don't reject.
@@ -179,9 +172,19 @@ ews.prototype <<<
       if @_s != 2 => return rej(err 0)
       # otherwise, it's a normal close event. we reset status and fire close event.
       @_status 0
-      # we don't have to actually fire close event ourselves here,
-      # since we are already in close event handler.
+      # when network disconnected, socket close may not be able to be done immediately -
+      # close event may even not fired until connection is restored.
+      # this is hinted with a offline event, # so we can somehow prevent
+      # further communicating via a dying connection.
+      @fire \offline
       if @_ctrl.disconnector => @_ctrl.disconnector.res!
+      # we don't have to actually fire close event ourselves here,
+      # since this is expected to be the close event handler.
+      # however, please note browser close event may not be reliable.
+
+    window.addEventListener \offline, ~> @disconnect!
+    @_ws.addEventListener \close, ~> @close-handler!
+
     @_ws.addEventListener \open, ~>
       if !@_ctrl.canceller => return res!
       @_ctrl.canceller.res!
@@ -227,6 +230,8 @@ ews.prototype <<<
     ret = new Promise (res, rej) ~> @_ctrl.disconnector = {res, rej}
     # let _connect takes care of deinit tasks
     @_ws.close!
+    # in case that close event is not fired, we call the handler here.
+    @close-handler!
     ret
 
   cancel: ->

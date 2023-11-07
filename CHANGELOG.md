@@ -1,5 +1,10 @@
 # Change Logs
 
+## v0.0.16
+
+ - due to untrustable `close` event, we move close event handler to a standalone function, and call it from both close and offline event.
+
+
 ## v0.0.15
 
  - fire `offline` event when offline event received from window.
