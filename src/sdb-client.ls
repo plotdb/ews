@@ -49,6 +49,9 @@ ews.sdb-client.prototype = Object.create(Object.prototype) <<< do
       .then ~>
         @_sws = new ews ws: @_ws, scope: \sharedb
         @_connection = new sharedb.Connection @_sws
+        # sharedb.Connection won't throw errors but send error here.
+        # so we should always handle sdb errors.
+        @_connection.on \error, (err) ~> @fire \error, {err}
 
   disconnect: -> @_ws.disconnect!
   cancel: -> @_ws.cancel!

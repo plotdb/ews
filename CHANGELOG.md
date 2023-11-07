@@ -1,5 +1,10 @@
 # Change Logs
 
+## v0.0.18
+
+ - watch for `Connection` errors so caller can handle those errors.
+
+
 ## v0.0.17
 
  - prevent calling `close` and `send` without `_ws`

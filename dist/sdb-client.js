@@ -115,7 +115,12 @@
           ws: this$._ws,
           scope: 'sharedb'
         });
-        return this$._connection = new sharedb.Connection(this$._sws);
+        this$._connection = new sharedb.Connection(this$._sws);
+        return this$._connection.on('error', function(err){
+          return this$.fire('error', {
+            err: err
+          });
+        });
       });
     },
     disconnect: function(){

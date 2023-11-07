@@ -84,7 +84,8 @@ create a sdb-client everytime the ews object (re)connected:
 Additionally, following events are available in sdb-client:
 
  - `close`: socket is closed.
- - `error`: fired when receiving `error` events from sharedb `Doc`
+ - `error`: fired when receiving `error` events from sharedb `Doc` or `Connection`.
+   - NOTE please always handle `error` event to keep your doc up to date.
 
 
 ### sdb-server
