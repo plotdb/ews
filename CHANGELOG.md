@@ -1,5 +1,12 @@
 # Change Logs
 
+## v0.0.17
+
+ - prevent calling `close` and `send` without `_ws`
+ - make `close-handler` work only if event source = `_ws`
+ - use `on` instead of `addEventListener` for `offline` event
+
+
 ## v0.0.16
 
  - due to untrustable `close` event, we move close event handler to a standalone function, and call it from both close and offline event.

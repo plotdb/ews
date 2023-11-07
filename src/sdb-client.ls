@@ -4,7 +4,7 @@ ews.sdb-client = (opt = {}) ->
     _connection: null # sharedb connection object
     _ws: opt.ws
   # unfortunately `close` event is not reliable, so we track ews offline event.
-  @_ws.addEventListener \offline, ~>
+  @_ws.on \offline, ~>
     if !(@_connection and @_sws) => return
     @ <<< _connection: null, _sws: null
     @fire \close

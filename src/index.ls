@@ -111,9 +111,9 @@ ews.prototype = Object.create(Object.prototype) <<<
     if t != \message => return @_ws.removeEventListener t, cb, o
     @_ws.removeEventListener t, @_hdr.get(cb), o
 
-  close: (c, r) -> @_ws.close c, r
+  close: (c, r) -> if @_ws => @_ws.close c, r
   # format message in "scope|data". accept string only for now
-  send: (d) -> @_ws.send "#{@_scope}|#d"
+  send: (d) -> if @_ws => @_ws.send "#{@_scope}|#d"
 
 # essential websocket properties
 Object.defineProperties ews.prototype, {
@@ -160,8 +160,11 @@ ews.prototype <<<
       d._ws = @_ws
       d._installEventListeners!
 
-    @close-handler = ->
+    # _ws: source of close event. it should be the same with @_ws,
+    #      otherwise we may work on a newly created one.
+    @close-handler = (_ws) ->
       if !@_ws => return
+      if @_ws != _ws => return
       @_ws = null
       @_svl.map (d) ~> d._ws = null
       # Promise is resolved if ever connected so we don't reject.
@@ -183,7 +186,9 @@ ews.prototype <<<
       # however, please note browser close event may not be reliable.
 
     window.addEventListener \offline, ~> @disconnect!
-    @_ws.addEventListener \close, ~> @close-handler!
+
+    that = @
+    @_ws.addEventListener \close, -> that.close-handler @
 
     @_ws.addEventListener \open, ~>
       if !@_ctrl.canceller => return res!
@@ -231,7 +236,7 @@ ews.prototype <<<
     # let _connect takes care of deinit tasks
     @_ws.close!
     # in case that close event is not fired, we call the handler here.
-    @close-handler!
+    @close-handler @_ws
     ret
 
   cancel: ->

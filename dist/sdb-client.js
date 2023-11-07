@@ -7,7 +7,7 @@
       _connection: null,
       _ws: opt.ws
     });
-    this._ws.addEventListener('offline', function(){
+    this._ws.on('offline', function(){
       if (!(this$._connection && this$._sws)) {
         return;
       }

@@ -173,9 +173,13 @@
     }
     return this._ws.removeEventListener(t, this._hdr.get(cb), o);
   }, ref$.close = function(c, r){
-    return this._ws.close(c, r);
+    if (this._ws) {
+      return this._ws.close(c, r);
+    }
   }, ref$.send = function(d){
-    return this._ws.send(this._scope + "|" + d);
+    if (this._ws) {
+      return this._ws.send(this._scope + "|" + d);
+    }
   }, ref$);
   Object.defineProperties(ews.prototype, {
     bufferedAmount: {
@@ -302,6 +306,7 @@
     var this$ = this;
     opt == null && (opt = {});
     return new Promise(function(res, rej){
+      var that;
       if (this$._ws) {
         return rej(err(1011));
       }
@@ -313,8 +318,11 @@
         d._ws = this$._ws;
         return d._installEventListeners();
       });
-      this$.closeHandler = function(){
+      this$.closeHandler = function(_ws){
         if (!this._ws) {
+          return;
+        }
+        if (this._ws !== _ws) {
           return;
         }
         this._ws = null;
@@ -333,8 +341,9 @@
       window.addEventListener('offline', function(){
         return this$.disconnect();
       });
+      that = this$;
       this$._ws.addEventListener('close', function(){
-        return this$.closeHandler();
+        return that.closeHandler(this);
       });
       this$._ws.addEventListener('open', function(){
         if (!this$._ctrl.canceller) {
@@ -413,7 +422,7 @@
       };
     });
     this._ws.close();
-    this.closeHandler();
+    this.closeHandler(this._ws);
     return ret;
   };
   ref$.cancel = function(){
