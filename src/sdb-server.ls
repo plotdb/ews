@@ -14,6 +14,8 @@ lderror-wrapper = (e) ->
   else {code: "wrapped-lderror", message: JSON.stringify(e{id,name,message})}
 
 sdb-server = (opt) ->
+  # session: express-session middelware.
+  # e.g., in @servebase, it can be retrieved by `backend.session.middleware!`
   {app, io, session, access, milestone-db, wss, metadata} = opt
 
   server = null
