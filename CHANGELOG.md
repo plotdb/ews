@@ -1,5 +1,11 @@
 # Change Logs
 
+## v0.0.19
+
+ - support `interval` option in `ping` api, and `pingInterval` option in ews constructor.
+ - change minimal ping interval from 60s to 20s.
+
+
 ## v0.0.18
 
  - watch for `Connection` errors so caller can handle those errors.

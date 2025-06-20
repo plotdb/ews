@@ -44,7 +44,7 @@ ews = (o = {}) ->
       canceller: null
       disconnector: null
     # ping controller
-    _ping: {hdr: null, interval: 60}
+    _ping: {hdr: null, interval: o.ping-interval or 60}
     # status. 0: disconnected. 1: connecting. 2: connected.
     _s: 0
   @
@@ -68,7 +68,7 @@ ews.prototype = Object.create(Object.prototype) <<<
     @_ping.hdr = setTimeout (~>
       @_ping.hdr = null
       @ping now: true
-    ), (1000 * ((@_ping.interval or 60) >? 60))
+    ), (1000 * ((opt.interval or @_ping.interval or 60) >? 20))
 
   # we may add event listener before ws is created.
   # additionally, we may reconnect.

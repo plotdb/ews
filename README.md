@@ -15,6 +15,7 @@ Constructor options:
    - ignored if `ws` is provided.
    - derived from `scheme`, `domain` and `path` above if both `ws` and `url` are omitted
  - `scope`: scope of this socket. default ``
+ - `pingInterval`: optional. interval between ping. default 60s, minimal 20s.
 
 
 API (ews):
@@ -39,6 +40,7 @@ API (ews):
    - `opt` is an object with following field:
      - `now`: default false. if false, ping message is sent after ping interval;
               otherwise it will be sent immediately.
+     - `interval: optional. interval of ping. default 60s, minimal 20s.
  - `unping()`: stop ping.
 
 API (from original WebSocket):

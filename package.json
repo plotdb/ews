@@ -1,6 +1,6 @@
 {
   "name": "@plotdb/ews",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "elastic websocket",
   "main": "dist/index.min.js",
   "browser": "dist/index.min.js",
@@ -35,7 +35,7 @@
     "browserify": "^17.0.0",
     "envify": "^4.1.0",
     "express": "^4.17.3",
-    "fedep": "^1.1.11",
+    "fedep": "^1.4.3",
     "ldcover": "^3.5.3",
     "ldview": "^1.4.0",
     "livescript": "^1.6.0",

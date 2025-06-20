@@ -63,7 +63,7 @@
     };
     this._ping = {
       hdr: null,
-      interval: 60
+      interval: o.pingInterval || 60
     };
     this._s = 0;
     return this;
@@ -104,7 +104,7 @@
       return this$.ping({
         now: true
       });
-    }, 1000 * ((ref$ = this._ping.interval || 60) > 60 ? ref$ : 60));
+    }, 1000 * ((ref$ = opt.interval || this._ping.interval || 60) > 20 ? ref$ : 20));
   }, ref$.addEventListener = function(t, cb, o, fromon){
     var ref$;
     if (!(t === 'message' || t === 'open' || t === 'close' || t === 'error')) {
