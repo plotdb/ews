@@ -85,7 +85,7 @@
               });
             });
             if (watch != null) {
-              doc.on('op', function(ops, source){
+              doc.on('op batch', function(ops, source){
                 return watch(ops, source);
               });
             }

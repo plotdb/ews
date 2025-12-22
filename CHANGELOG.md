@@ -1,5 +1,11 @@
 # Change Logs
 
+## v0.0.20
+
+ - use `op batch` instead of `op` event for batching ops, to prevent conceptual atomic transactions such as object moving from being tear apart into string editing, causing rendering issue.
+ - separate sharedb bundle tool from build script to a standalone package.json
+
+
 ## v0.0.19
 
  - support `interval` option in `ping` api, and `pingInterval` option in ews constructor.

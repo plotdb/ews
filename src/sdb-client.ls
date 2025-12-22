@@ -35,7 +35,7 @@ ews.sdb-client.prototype = Object.create(Object.prototype) <<< do
       if e => return rej e
       doc.subscribe (ops, source) -> res doc
       doc.on \error, (err) ~> @fire \error, {doc, err}
-      if watch? => doc.on \op, (ops, source) -> watch ops, source
+      if watch? => doc.on 'op batch', (ops, source) -> watch ops, source
       if !doc.type => doc.create ((if create => create! else null) or {})
     p.catch (e) ~>
       if e.code == \wrapped-lderror => e = new Error! <<< JSON.parse(e.message)
