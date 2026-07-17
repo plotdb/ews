@@ -8,11 +8,11 @@ root = path.join(path.dirname(fs.realpathSync __filename.replace(/\(js\)$/,'')),
 config = do
   pg: do
     uri: "postgres://grantdash:pg@#{process.env.DB_HOST or \localhost}/pg"
-    database: "pg"
-    user: "pg"
-    password: "pg"
+    database: "postgres"
+    user: "postgres"
+    password: "postgres"
     host: "#{process.env.DB_HOST or \localhost}"
-    port: "#{process.env.DB_PORT or 15432}"
+    port: "#{process.env.DB_PORT or 5432}"
 
 server = do
   init: ->

@@ -7,6 +7,7 @@ messages = {}
   @data = {}
   @ws = ws = new ews url: "ws://localhost:5100"
   ws.on \close, ~> @ <<< doc: null
+  ws.on \offline, (info) -> console.log "ws offline: ", JSON.stringify(info)
   ws.on \status, -> console.log "status: ", it
   ws.on \status, (s) ~>
     if s != 2 => return
@@ -56,6 +57,8 @@ messages = {}
     .then ~>
       console.log "connecting sdb..."
       @sdb = new ews.sdb-client ws: @ws
+      @sdb.on \close, -> console.log "sdb closed"
+      @sdb.on \error, (e) -> console.log "sdb error: ", JSON.stringify(e)
       @sdb.connect!
     .then ~>
       console.log "get sdb doc..."
