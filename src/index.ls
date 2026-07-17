@@ -162,7 +162,7 @@ ews.prototype <<<
 
     # _ws: source of close event. it should be the same with @_ws,
     #      otherwise we may work on a newly created one.
-    @close-handler = (_ws) ->
+    @close-handler = (_ws, e) ->
       if !@_ws => return
       if @_ws != _ws => return
       @_ws = null
@@ -179,16 +179,18 @@ ews.prototype <<<
       # close event may even not fired until connection is restored.
       # this is hinted with a offline event, # so we can somehow prevent
       # further communicating via a dying connection.
-      @fire \offline
+      info = if e? and e.code? => {src: \ws-close} <<< e{code, reason, wasClean}
+      else if e? => e else {}
+      @fire \offline, info
       if @_ctrl.disconnector => @_ctrl.disconnector.res!
       # we don't have to actually fire close event ourselves here,
       # since this is expected to be the close event handler.
       # however, please note browser close event may not be reliable.
 
-    window.addEventListener \offline, ~> @disconnect!
+    window.addEventListener \offline, ~> @disconnect {src: \network-offline}
 
     that = @
-    @_ws.addEventListener \close, -> that.close-handler @
+    @_ws.addEventListener \close, (e) -> that.close-handler @, e
 
     @_ws.addEventListener \open, ~>
       if !@_ctrl.canceller => return res!
@@ -229,14 +231,14 @@ ews.prototype <<<
       ), delay
     _!
 
-  disconnect: ->
+  disconnect: (info) ->
     if @_s == 0 => return Promise.resolve!
     if @_s == 1 => return @cancel!
     ret = new Promise (res, rej) ~> @_ctrl.disconnector = {res, rej}
     # let _connect takes care of deinit tasks
     @_ws.close!
     # in case that close event is not fired, we call the handler here.
-    @close-handler @_ws
+    @close-handler @_ws, info
     ret
 
   cancel: ->

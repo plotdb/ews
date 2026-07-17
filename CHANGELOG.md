@@ -1,5 +1,12 @@
 # Change Logs
 
+## v0.1.0
+
+ - pass close event info (code, reason, wasClean) as `info` object when firing `offline` event.
+ - `disconnect` now accepts an `info` object and forwards it to the `offline` event.
+ - pass `{src: "browser-offline"}` as info when offline is triggered by browser's offline event.
+
+
 ## v0.0.20
 
  - use `op batch` instead of `op` event for batching ops, to prevent conceptual atomic transactions such as object moving from being tear apart into string editing, causing rendering issue.

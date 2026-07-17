@@ -318,7 +318,8 @@
         d._ws = this$._ws;
         return d._installEventListeners();
       });
-      this$.closeHandler = function(_ws){
+      this$.closeHandler = function(_ws, e){
+        var info, ref$;
         if (!this._ws) {
           return;
         }
@@ -333,17 +334,26 @@
           return rej(err(0));
         }
         this._status(0);
-        this.fire('offline');
+        info = e != null && e.code != null
+          ? (ref$ = {
+            src: 'ws-close'
+          }, ref$.code = e.code, ref$.reason = e.reason, ref$.wasClean = e.wasClean, ref$)
+          : e != null
+            ? e
+            : {};
+        this.fire('offline', info);
         if (this._ctrl.disconnector) {
           return this._ctrl.disconnector.res();
         }
       };
       window.addEventListener('offline', function(){
-        return this$.disconnect();
+        return this$.disconnect({
+          src: 'network-offline'
+        });
       });
       that = this$;
-      this$._ws.addEventListener('close', function(){
-        return that.closeHandler(this);
+      this$._ws.addEventListener('close', function(e){
+        return that.closeHandler(this, e);
       });
       this$._ws.addEventListener('open', function(){
         if (!this$._ctrl.canceller) {
@@ -407,7 +417,7 @@
       return _();
     });
   };
-  ref$.disconnect = function(){
+  ref$.disconnect = function(info){
     var ret, this$ = this;
     if (this._s === 0) {
       return Promise.resolve();
@@ -422,7 +432,7 @@
       };
     });
     this._ws.close();
-    this.closeHandler(this._ws);
+    this.closeHandler(this._ws, info);
     return ret;
   };
   ref$.cancel = function(){

@@ -1,6 +1,6 @@
 {
   "name": "@plotdb/ews",
-  "version": "0.0.20",
+  "version": "0.1.0",
   "description": "elastic websocket",
   "main": "dist/index.min.js",
   "browser": "dist/index.min.js",
@@ -27,8 +27,8 @@
     "@loadingio/debounce.js": "^1.0.1",
     "@loadingio/ldquery": "^3.0.6",
     "@plotdb/json0": "^0.0.5",
-    "@plotdb/srcbuild": "^0.0.69",
-    "@zbryikt/template": "^2.4.1",
+    "@plotdb/srcbuild": "^0.0.70",
+    "@zbryikt/template": "^2.4.2",
     "bootstrap": "^4.6.1",
     "express": "^4.17.3",
     "fedep": "^1.6.0",
