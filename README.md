@@ -57,7 +57,9 @@ API (from original WebSocket):
 
 Except original WebSocket events, we provide additional events as follows:
 
- - `offline`: when network goes offline, this event is fired.
+ - `offline`: fired when the connection goes offline. Carries an `info` object with a `src` field indicating how the disconnection was detected:
+    - `ws-close`: detected via WebSocket close event. `info` also includes `code`, `reason`, and `wasClean` from the close event.
+    - `network-offline`: detected via browser's `window offline` event.
     - `close` somehow may not yet fired when `offline` is fired, so this can be used to hint user about a dying socket.
 
 
