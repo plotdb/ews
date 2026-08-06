@@ -44,7 +44,7 @@ ews = (o = {}) ->
       canceller: null
       disconnector: null
     # ping controller
-    _ping: {hdr: null, interval: o.ping-interval or 60}
+    _ping: {hdr: null, interval: o.ping-interval or 60, hidden-limit: o.hidden-limit ? 3600}
     # status. 0: disconnected. 1: connecting. 2: connected.
     _s: 0
   @
@@ -59,11 +59,20 @@ ews.prototype = Object.create(Object.prototype) <<<
   ping: (opt = {}) ->
     if !@_ping.running =>
       @_ping.is-visible = ~> @_ping.visible = (document.visibilityState == \visible)
-      @_ping.check = ~> if @_ping.is-visible! => @ping now: true
+      @_ping.check = ~>
+        if @_ping.is-visible!
+          @_ping.hidden-since = null
+          @ping now: true
+        else
+          @_ping.hidden-since ?= Date.now!
       @_ping.running = true
       document.addEventListener \visibilitychange, @_ping.check
     if @_ping.hdr => clearTimeout @_ping.hdr
-    if !@_ping.is-visible => return
+    if !@_ping.is-visible! =>
+      hl = @_ping.hidden-limit
+      if !hl => return
+      @_ping.hidden-since ?= Date.now!
+      if (Date.now! - @_ping.hidden-since) / 1000 >= hl => return
     if opt.now and @status! == 2 => @send("ping")
     @_ping.hdr = setTimeout (~>
       @_ping.hdr = null

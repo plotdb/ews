@@ -5,7 +5,7 @@
     return ref$ = new Error(), ref$.name = 'lderror', ref$.id = e, ref$;
   };
   ews = function(o){
-    var r;
+    var r, ref$;
     o == null && (o = {});
     this._scheme = o.scheme;
     this._domain = o.domain;
@@ -63,7 +63,8 @@
     };
     this._ping = {
       hdr: null,
-      interval: o.pingInterval || 60
+      interval: o.pingInterval || 60,
+      hiddenLimit: (ref$ = o.hiddenLimit) != null ? ref$ : 3600
     };
     this._s = 0;
     return this;
@@ -74,17 +75,23 @@
     document.removeEventListener('visibilitychange', this._ping.check);
     return ref$ = this._ping, ref$.hdr = null, ref$.running = false, ref$;
   }, ref$.ping = function(opt){
-    var ref$, this$ = this;
+    var hl, ref$, this$ = this;
     opt == null && (opt = {});
     if (!this._ping.running) {
       this._ping.isVisible = function(){
         return this$._ping.visible = document.visibilityState === 'visible';
       };
       this._ping.check = function(){
+        var ref$, ref1$;
         if (this$._ping.isVisible()) {
+          this$._ping.hiddenSince = null;
           return this$.ping({
             now: true
           });
+        } else {
+          return (ref1$ = (ref$ = this$._ping).hiddenSince) != null
+            ? ref1$
+            : ref$.hiddenSince = Date.now();
         }
       };
       this._ping.running = true;
@@ -93,8 +100,15 @@
     if (this._ping.hdr) {
       clearTimeout(this._ping.hdr);
     }
-    if (!this._ping.isVisible) {
-      return;
+    if (!this._ping.isVisible()) {
+      hl = this._ping.hiddenLimit;
+      if (!hl) {
+        return;
+      }
+      (ref$ = this._ping).hiddenSince == null && (ref$.hiddenSince = Date.now());
+      if ((Date.now() - this._ping.hiddenSince) / 1000 >= hl) {
+        return;
+      }
     }
     if (opt.now && this.status() === 2) {
       this.send("ping");
@@ -126,6 +140,9 @@
     }
     return function(scope, fromon){
       var hdr;
+      if (e.target !== this$._ws) {
+        return;
+      }
       this$._ws.addEventListener(t, hdr = function(e){
         var data, evt;
         if (!e.data.startsWith(this$._scope + "|")) {
@@ -326,6 +343,7 @@
         if (this._ws !== _ws) {
           return;
         }
+        this._ws.close();
         this._ws = null;
         this._svl.map(function(d){
           return d._ws = null;
