@@ -1,5 +1,10 @@
 # Change Logs
 
+## v0.2.1
+
+ - upgrade dependencies
+ 
+
 ## v0.2.0
 
  - add `dispose()`: permanently detach an ews object - unsupervise from its source and remove all handlers it ever installed on any raw websocket, so a discarded ( e.g. scoped ) ews can never leak stale events to its consumer.
