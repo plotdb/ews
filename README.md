@@ -21,6 +21,8 @@ Constructor options:
 API (ews):
 
  - `pipe(scope)`: return a scoped `ews` object piped from this ews object.
+ - `dispose()`: permanently detach this ews object - unsupervise from its source and remove all handlers it ever installed on any raw websocket.
+   - a disposed ews can neither receive events nor be re-attached on reconnect. use this to safely discard a scoped ( piped ) ews, so late events from a stale session can never leak to its consumer.
  - `ws()`: return the real websocket object used.
  - `ensure()`: ensure connection. return Promise, resolves when connected
  - `disconnect()`: disconnect websocket from server.
@@ -74,20 +76,35 @@ Sharedb is bundled in this repo, in following files:
 
 ### sdb-client
 
-prepare a `ews` object:
+prepare a `ews` object, and create a sdb-client once:
 
       ws = new ews({url: ...});
+      sdb = new ews.sdb-client({ws: ws});
+      sdb.connect().then( ... );
 
-create a sdb-client everytime the ews object (re)connected:
+sdb-client keeps its sharedb `Connection` - and thus all docs, along with
+their pending / inflight ops - alive across disconnection. on reconnect it
+binds a fresh scoped socket via sharedb's `bindToSocket`, then sharedb
+resubscribes ( catching up by doc version ) and resends unacknowledged ops
+( deduplicated by src / seq on server ) by itself. there is no need to
+recreate sdb-client per reconnect; just call `ensure()` ( or `connect()` )
+when the underlying ews is back.
 
-      ws.on("open", function() {
-        sdb = new ews.sdb-client({ws: ws});
-        sdb.connect().then( ... );
-      });
+a socket declared dead is disposed immediately ( see ews `dispose()` ), so
+late events from a stale session - a half-open socket revived, a buffered
+close, an orphan reply - can never reach sharedb.
+
+APIs:
+
+ - `connect()`: ensure the underlying ews is connected, then create or rebind the sharedb connection. return Promise.
+ - `ensure()`: alias of `connect()`.
+ - `get({id, collection, create, watch})`: fetch and subscribe a doc. return Promise resolving to the doc.
+ - `getSnapshot({id, version, collection})`: fetch a doc snapshot.
+ - `disconnect()` / `cancel()` / `status()`: delegate to the underlying ews.
 
 Additionally, following events are available in sdb-client:
 
- - `close`: socket is closed.
+ - `close`: socket is closed. the sharedb connection and its docs survive this - they resync after reconnect.
  - `error`: fired when receiving `error` events from sharedb `Doc` or `Connection`.
    - NOTE please always handle `error` event to keep your doc up to date.
 
