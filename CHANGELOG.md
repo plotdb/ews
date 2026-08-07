@@ -11,6 +11,7 @@
  - track raw websockets we installed listeners on ( `_iws` ), pruning fully-closed ones to avoid blocking GC.
  - sdb-client: sharedb `Connection` now survives disconnection - docs ( along with their pending / inflight ops ) are kept across reconnect. on reconnect a fresh scoped socket is bound via `bindToSocket`; sharedb then resubscribes ( catch-up by doc version ) and resends unacknowledged ops ( deduplicated by src / seq on server ) by itself. no need to recreate sdb-client per reconnect anymore.
  - sdb-client: a socket declared dead is disposed immediately, so late events from a stale session ( half-open socket revived, buffered close, orphan replies ) can no longer reach sharedb. this fixes orphan-reply crashes in `_handleSubscribe` and `ERR_CONNECTION_STATE_TRANSITION_INVALID` during reconnect.
+ - NOTE: with a persistent connection, re-`get`ting the same doc on every reconnect becomes an anti-pattern ( duplicate subscription; risk of orphan-reply crashes ). just call `ensure()` and let sharedb resync - or use `@plotdb/datahub` >= 0.7.0, which handles this correctly.
 
 
 ## v0.1.0
