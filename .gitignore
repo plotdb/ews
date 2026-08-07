@@ -3,3 +3,4 @@
 node_modules
 web/static/assets/lib/
 web/.view/
+/context/shared
