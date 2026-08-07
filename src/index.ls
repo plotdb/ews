@@ -167,6 +167,22 @@ ews.prototype <<<
   # through it to its consumer (e.g. a sharedb connection).
   dispose: ->
     if @_src => @_src._supervise @, false
+    # a disposed socket is gone for good - deliver a final close to consumers
+    # that have not observed one yet. death may have been declared while the
+    # raw ws was still half-open, with its real close event never (or not
+    # yet) fired; without this, a consumer's state machine (e.g. sharedb
+    # Connection) still believes it is connected and rejects the next
+    # bindToSocket as an invalid state transition.
+    # handlers are detached right below, so a late real close won't be
+    # delivered on top of this one. consumers that already received the real
+    # close get this synthetic one as a duplicate - close must be treated as
+    # idempotent (sharedb does).
+    evt = {type: \close, code: 4000, reason: \disposed, wasClean: false}
+    if typeof(CloseEvent) != \undefined =>
+      evt = new CloseEvent \close, {code: 4000, reason: \disposed, wasClean: false}
+    for item in (@_evthdr.close or []) =>
+      if !item or !item.cb => continue
+      try item.cb evt catch e => console.error e
     for ws in @_iws.splice 0 =>
       for t in <[message open close error]> =>
         for item in (@_evthdr[t] or []) =>

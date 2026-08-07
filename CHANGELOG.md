@@ -1,5 +1,10 @@
 # Change Logs
 
+## v0.2.2
+
+ - fix bug: `dispose()` now delivers a final synthetic close event to consumers before detaching handlers. death may be declared while the raw ws is still half-open ( real close event not yet fired ); consumers detached without ever seeing a close kept a stale `connected` state - e.g., sharedb `Connection` then rejected the next `bindToSocket` with `ERR_CONNECTION_STATE_TRANSITION_INVALID` ( "Cannot transition directly from connected to connecting" ), forcing a page reload after reconnect.
+
+
 ## v0.2.1
 
  - upgrade dependencies

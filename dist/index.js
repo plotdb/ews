@@ -310,9 +310,34 @@
     }
   };
   ref$.dispose = function(){
-    var i$, ref$, len$, ws, j$, ref1$, len1$, t, k$, ref2$, len2$, item, hdr;
+    var evt, i$, ref$, len$, item, e, ws, j$, ref1$, len1$, t, k$, ref2$, len2$, hdr;
     if (this._src) {
       this._src._supervise(this, false);
+    }
+    evt = {
+      type: 'close',
+      code: 4000,
+      reason: 'disposed',
+      wasClean: false
+    };
+    if (typeof CloseEvent !== 'undefined') {
+      evt = new CloseEvent('close', {
+        code: 4000,
+        reason: 'disposed',
+        wasClean: false
+      });
+    }
+    for (i$ = 0, len$ = (ref$ = this._evthdr.close || []).length; i$ < len$; ++i$) {
+      item = ref$[i$];
+      if (!item || !item.cb) {
+        continue;
+      }
+      try {
+        item.cb(evt);
+      } catch (e$) {
+        e = e$;
+        console.error(e);
+      }
     }
     for (i$ = 0, len$ = (ref$ = this._iws.splice(0)).length; i$ < len$; ++i$) {
       ws = ref$[i$];
