@@ -47,6 +47,10 @@ ews = (o = {}) ->
     _ping: {hdr: null, interval: o.ping-interval or 60}
     # status. 0: disconnected. 1: connecting. 2: connected.
     _s: 0
+    # raw ws we have ever installed listeners on. tracked for `dispose`:
+    # close-handler nulls _ws (for supervised offspring) before offline is
+    # fired, so at dispose time _ws alone is not a reliable reference.
+    _iws: []
   @
 
 # essential websocket APIs
@@ -81,6 +85,11 @@ ews.prototype = Object.create(Object.prototype) <<<
 
   _installEventListener: (t, cb, o, fromon) ->
     if !@_ws => return
+    if !(@_ws in @_iws) =>
+      # prune fully-closed ws: they can no longer fire events,
+      # and keeping them around only prevents GC.
+      @_iws = @_iws.filter -> it.readyState != 3
+      @_iws.push @_ws
     if t != \message => return @_ws.addEventListener t, cb, (o or {})
     ((scope, fromon) ~>
       @_ws.addEventListener t, (hdr = (e) ~>
@@ -150,6 +159,20 @@ ews.prototype <<<
       if a => return else @_svl.splice(@_svl.indexOf(o),1)
     else
       if a => @_svl.push o else return
+
+  # permanently detach this ews: unsupervise from its source and remove all
+  # handlers we ever installed on any raw ws. a disposed ews can neither
+  # receive nor be re-attached - late events from an old session (half-open
+  # socket revived, buffered close, stale replies) can no longer leak
+  # through it to its consumer (e.g. a sharedb connection).
+  dispose: ->
+    if @_src => @_src._supervise @, false
+    for ws in @_iws.splice 0 =>
+      for t in <[message open close error]> =>
+        for item in (@_evthdr[t] or []) =>
+          hdr = if t == \message => @_hdr.get(item.cb) else item.cb
+          if hdr => ws.removeEventListener t, hdr, (item.o or {})
+    @_ws = null
 
   # resolves if connected. otherwise rejects.
   _connect: (opt = {}) -> new Promise (res, rej) ~>

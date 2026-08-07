@@ -5,23 +5,14 @@
     import$(this, {
       _evthdr: {},
       _connection: null,
+      _sws: null,
       _ws: opt.ws
     });
     this._ws.on('offline', function(){
-      if (!(this$._connection && this$._sws)) {
-        return;
-      }
-      this$._connection = null;
-      this$._sws = null;
-      return this$.fire('close');
+      return this$._onBroken();
     });
     this._ws.addEventListener('close', function(){
-      if (!(this$._connection && this$._sws)) {
-        return;
-      }
-      this$._connection = null;
-      this$._sws = null;
-      return this$.fire('close');
+      return this$._onBroken();
     });
     return this;
   };
@@ -48,6 +39,55 @@
       }
       return results$;
     },
+    _onBroken: function(){
+      if (!this._sws) {
+        return;
+      }
+      this._releaseSws();
+      return this.fire('close');
+    },
+    _releaseSws: function(){
+      if (!this._sws) {
+        return;
+      }
+      this._sws.dispose();
+      return this._sws = null;
+    },
+    _bind: function(){
+      var this$ = this;
+      if (this._sws) {
+        return;
+      }
+      this._sws = new ews({
+        ws: this._ws,
+        scope: 'sharedb'
+      });
+      if (!this._connection) {
+        this._connection = new sharedb.Connection(this._sws);
+        return this._connection.on('error', function(err){
+          return this$.fire('error', {
+            err: err
+          });
+        });
+      } else {
+        return this._connection.bindToSocket(this._sws);
+      }
+    },
+    connect: function(){
+      var this$ = this;
+      return Promise.resolve().then(function(){
+        if (this$._ws.status() !== 2) {
+          return this$._ws.connect();
+        } else {
+          return null;
+        }
+      }).then(function(){
+        return this$._bind();
+      });
+    },
+    ensure: function(){
+      return this.connect();
+    },
     getSnapshot: function(arg$){
       var id, version, collection, this$ = this;
       id = arg$.id, version = arg$.version, collection = arg$.collection;
@@ -64,9 +104,7 @@
     get: function(arg$){
       var id, watch, create, collection, this$ = this;
       id = arg$.id, watch = arg$.watch, create = arg$.create, collection = arg$.collection;
-      return (!this._connection
-        ? this.connect()
-        : Promise.resolve()).then(function(){
+      return this.ensure().then(function(){
         var p;
         p = new Promise(function(res, rej){
           var doc;
@@ -102,27 +140,6 @@
         });
       });
     },
-    connect: function(){
-      var this$ = this;
-      if (this._connection) {
-        return Promise.resolve();
-      }
-      if (this._ws.status() !== 2) {
-        this._ws.connect();
-      }
-      return Promise.resolve().then(function(){
-        this$._sws = new ews({
-          ws: this$._ws,
-          scope: 'sharedb'
-        });
-        this$._connection = new sharedb.Connection(this$._sws);
-        return this$._connection.on('error', function(err){
-          return this$.fire('error', {
-            err: err
-          });
-        });
-      });
-    },
     disconnect: function(){
       return this._ws.disconnect();
     },
@@ -131,9 +148,6 @@
     },
     status: function(){
       return this._ws.status();
-    },
-    ensure: function(){
-      return this._ws.ensure();
     }
   });
   if (typeof module != 'undefined' && module !== null) {

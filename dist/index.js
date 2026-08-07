@@ -66,6 +66,7 @@
       interval: o.pingInterval || 60
     };
     this._s = 0;
+    this._iws = [];
     return this;
   };
   ews.prototype = (ref$ = Object.create(Object.prototype), ref$.unping = function(){
@@ -120,6 +121,12 @@
     var this$ = this;
     if (!this._ws) {
       return;
+    }
+    if (!in$(this._ws, this._iws)) {
+      this._iws = this._iws.filter(function(it){
+        return it.readyState !== 3;
+      });
+      this._iws.push(this._ws);
     }
     if (t !== 'message') {
       return this._ws.addEventListener(t, cb, o || {});
@@ -301,6 +308,28 @@
         return this._svl.push(o);
       } else {}
     }
+  };
+  ref$.dispose = function(){
+    var i$, ref$, len$, ws, j$, ref1$, len1$, t, k$, ref2$, len2$, item, hdr;
+    if (this._src) {
+      this._src._supervise(this, false);
+    }
+    for (i$ = 0, len$ = (ref$ = this._iws.splice(0)).length; i$ < len$; ++i$) {
+      ws = ref$[i$];
+      for (j$ = 0, len1$ = (ref1$ = ['message', 'open', 'close', 'error']).length; j$ < len1$; ++j$) {
+        t = ref1$[j$];
+        for (k$ = 0, len2$ = (ref2$ = this._evthdr[t] || []).length; k$ < len2$; ++k$) {
+          item = ref2$[k$];
+          hdr = t === 'message'
+            ? this._hdr.get(item.cb)
+            : item.cb;
+          if (hdr) {
+            ws.removeEventListener(t, hdr, item.o || {});
+          }
+        }
+      }
+    }
+    return this._ws = null;
   };
   ref$._connect = function(opt){
     var this$ = this;

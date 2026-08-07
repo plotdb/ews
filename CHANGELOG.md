@@ -1,5 +1,13 @@
 # Change Logs
 
+## v0.2.0
+
+ - add `dispose()`: permanently detach an ews object - unsupervise from its source and remove all handlers it ever installed on any raw websocket, so a discarded ( e.g. scoped ) ews can never leak stale events to its consumer.
+ - track raw websockets we installed listeners on ( `_iws` ), pruning fully-closed ones to avoid blocking GC.
+ - sdb-client: sharedb `Connection` now survives disconnection - docs ( along with their pending / inflight ops ) are kept across reconnect. on reconnect a fresh scoped socket is bound via `bindToSocket`; sharedb then resubscribes ( catch-up by doc version ) and resends unacknowledged ops ( deduplicated by src / seq on server ) by itself. no need to recreate sdb-client per reconnect anymore.
+ - sdb-client: a socket declared dead is disposed immediately, so late events from a stale session ( half-open socket revived, buffered close, orphan replies ) can no longer reach sharedb. this fixes orphan-reply crashes in `_handleSubscribe` and `ERR_CONNECTION_STATE_TRANSITION_INVALID` during reconnect.
+
+
 ## v0.1.0
 
  - pass close event info (code, reason, wasClean) as `info` object when firing `offline` event.
