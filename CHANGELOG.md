@@ -1,5 +1,11 @@
 # Change Logs
 
+## v0.2.3
+
+ - bind the `window offline` listener once instead of once per connection attempt. `_connect` runs again on every retry, so listeners accumulated for the life of the page and every one of them fired on the next offline event.
+ - cap the reconnect backoff at 40s. the ladder grows as `count^1.4 * 500`, so a long outage left the next attempt minutes away - past a point it only delays recovery. reached on the 23rd attempt, about six minutes in; below that the ramp is unchanged.
+
+
 ## v0.2.2
 
  - fix bug: `dispose()` now delivers a final synthetic close event to consumers before detaching handlers. death may be declared while the raw ws is still half-open ( real close event not yet fired ); consumers detached without ever seeing a close kept a stale `connected` state - e.g., sharedb `Connection` then rejected the next `bindToSocket` with `ERR_CONNECTION_STATE_TRANSITION_INVALID` ( "Cannot transition directly from connected to connecting" ), forcing a page reload after reconnect.
