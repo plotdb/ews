@@ -258,7 +258,8 @@ ews.prototype <<<
     retry = !(opt.retry?) or !opt.retry
     cc.count = 0
     _ = ~>
-      delay = Math.round(Math.pow(cc.count++, 1.4) * 500) + (opt.delay or 0)
+      # capped - past this the ladder only delays recovery.
+      delay = (Math.round(Math.pow(cc.count++, 1.4) * 500) <? 40000) + (opt.delay or 0)
       cc.hdr = setTimeout (~>
         cc.hdr = null
         console.log "reconnect ( #delay ms )"

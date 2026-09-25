@@ -448,8 +448,8 @@
       retry = !(opt.retry != null) || !opt.retry;
       cc.count = 0;
       _ = function(){
-        var delay;
-        delay = Math.round(Math.pow(cc.count++, 1.4) * 500) + (opt.delay || 0);
+        var delay, ref$;
+        delay = ((ref$ = Math.round(Math.pow(cc.count++, 1.4) * 500)) < 40000 ? ref$ : 40000) + (opt.delay || 0);
         return cc.hdr = setTimeout(function(){
           cc.hdr = null;
           console.log("reconnect ( " + delay + " ms )");
