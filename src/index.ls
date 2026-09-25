@@ -51,6 +51,8 @@ ews = (o = {}) ->
     # close-handler nulls _ws (for supervised offspring) before offline is
     # fired, so at dispose time _ws alone is not a reliable reference.
     _iws: []
+    # `_connect` runs again on every retry; the window listener is bound once.
+    _netbound: false
   @
 
 # essential websocket APIs
@@ -226,7 +228,9 @@ ews.prototype <<<
       # since this is expected to be the close event handler.
       # however, please note browser close event may not be reliable.
 
-    window.addEventListener \offline, ~> @disconnect {src: \network-offline}
+    if !@_netbound =>
+      @_netbound = true
+      window.addEventListener \offline, ~> @disconnect {src: \network-offline}
 
     that = @
     @_ws.addEventListener \close, (e) -> that.close-handler @, e

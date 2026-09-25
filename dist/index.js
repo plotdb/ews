@@ -67,6 +67,7 @@
     };
     this._s = 0;
     this._iws = [];
+    this._netbound = false;
     return this;
   };
   ews.prototype = (ref$ = Object.create(Object.prototype), ref$.unping = function(){
@@ -400,11 +401,14 @@
           return this._ctrl.disconnector.res();
         }
       };
-      window.addEventListener('offline', function(){
-        return this$.disconnect({
-          src: 'network-offline'
+      if (!this$._netbound) {
+        this$._netbound = true;
+        window.addEventListener('offline', function(){
+          return this$.disconnect({
+            src: 'network-offline'
+          });
         });
-      });
+      }
       that = this$;
       this$._ws.addEventListener('close', function(e){
         return that.closeHandler(this, e);
