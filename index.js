@@ -67,6 +67,7 @@
     };
     this._s = 0;
     this._iws = [];
+    this._netbound = false;
     return this;
   };
   ews.prototype = (ref$ = Object.create(Object.prototype), ref$.unping = function(){
@@ -400,11 +401,14 @@
           return this._ctrl.disconnector.res();
         }
       };
-      window.addEventListener('offline', function(){
-        return this$.disconnect({
-          src: 'network-offline'
+      if (!this$._netbound) {
+        this$._netbound = true;
+        window.addEventListener('offline', function(){
+          return this$.disconnect({
+            src: 'network-offline'
+          });
         });
-      });
+      }
       that = this$;
       this$._ws.addEventListener('close', function(e){
         return that.closeHandler(this, e);
@@ -444,8 +448,8 @@
       retry = !(opt.retry != null) || !opt.retry;
       cc.count = 0;
       _ = function(){
-        var delay;
-        delay = Math.round(Math.pow(cc.count++, 1.4) * 500) + (opt.delay || 0);
+        var delay, ref$;
+        delay = ((ref$ = Math.round(Math.pow(cc.count++, 1.4) * 500)) < 40000 ? ref$ : 40000) + (opt.delay || 0);
         return cc.hdr = setTimeout(function(){
           cc.hdr = null;
           console.log("reconnect ( " + delay + " ms )");
